@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from dotenv import load_dotenv
 
@@ -7,11 +9,13 @@ import models  # noqa: F401
 from database.session import create_db_and_tables
 from routers.course import router as course_router
 
-app = FastAPI(title="eMasterHub AI Course Creator")
-
-@app.on_event("startup")
-def on_startup() -> None:
+@asynccontextmanager
+async def lifespan(_: FastAPI):
     create_db_and_tables()
+    yield
+
+
+app = FastAPI(title="eMasterHub AI Course Creator", lifespan=lifespan)
 
 
 @app.get("/")
